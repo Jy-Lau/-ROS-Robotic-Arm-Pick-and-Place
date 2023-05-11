@@ -19,7 +19,7 @@ class PnP():
         self._check_controller_ready()
         self.pub_arm = rospy.Publisher('/eff_joint_traj_controller/command', JointTrajectory, queue_size=10)
         self.pub_gripper = rospy.Publisher('/gripper_controller/command', JointTrajectory, queue_size=10)
-        self.camera_subscriber = rospy.Subscriber('/plan', String, self.camera_callback)
+        # self.camera_subscriber = rospy.Subscriber('/plan', String, self.camera_callback)
         self.rate = rospy.Rate(10)
         self._setup_arm_gripper()
         # move_group = MoveGroupCommander('arm')
@@ -45,14 +45,14 @@ class PnP():
         self.arm_traj = JointTrajectory()
         self.arm_traj.joint_names = self.config['arm_joint_names']
         self.arm_point = JointTrajectoryPoint()
-        self.arm_point.positions = self.config['arm_initial_positions']
-        self.arm_point.time_from_start = rospy.Duration.from_sec(0.1)
+        self.arm_point.positions = self.config['arm_scanning_positions']
+        self.arm_point.time_from_start = rospy.Duration.from_sec(0.25)
         
         self.gripper_traj = JointTrajectory()
         self.gripper_traj.joint_names = self.config['gripper_joint_names']
         self.gripper_point = JointTrajectoryPoint()
         self.gripper_point.positions = self.config['gripper_open_positions']
-        self.gripper_point.time_from_start = rospy.Duration.from_sec(0.1)
+        self.gripper_point.time_from_start = rospy.Duration.from_sec(0.25)
         
 
     def camera_callback(self, msg):
@@ -60,14 +60,14 @@ class PnP():
             self.gripper_point.positions = self.config['gripper_open_positions']
         elif msg.data == 'Close':
             self.gripper_point.positions = self.config['gripper_close_positions']
-        elif msg.data == 'Up':
-            self.arm_point.positions[1] = max(self.arm_point.positions[1]-0.01,-1.13) # shoulder_lift_joint
-        elif msg.data == 'Down':
-            self.arm_point.positions[1] = min(self.arm_point.positions[1]+0.01,-0.75) # shoulder_lift_joint
-        elif msg.data == 'Left':
-            self.arm_point.positions[2] = min(self.arm_point.positions[2]+0.01, 0.25) # shoulder_pan_joint
-        elif msg.data == 'Right':
-            self.arm_point.positions[2] = max(self.arm_point.positions[2]-0.01,-0.88) # shoulder_pan_joint
+        # elif msg.data == 'Up':
+        #     self.arm_point.positions[1] = max(self.arm_point.positions[1]-0.01,-1.13) # shoulder_lift_joint
+        # elif msg.data == 'Down':
+        #     self.arm_point.positions[1] = min(self.arm_point.positions[1]+0.01,-0.75) # shoulder_lift_joint
+        # elif msg.data == 'Left':
+        #     self.arm_point.positions[2] = min(self.arm_point.positions[2]+0.01, 0.25) # shoulder_pan_joint
+        # elif msg.data == 'Right':
+        #     self.arm_point.positions[2] = max(self.arm_point.positions[2]-0.01,-0.88) # shoulder_pan_joint
 
     def _check_moveit_ready(self):
         moveit_msg = None
@@ -111,21 +111,6 @@ class PnP():
         self.gripper_traj.header.stamp = rospy.Time.now()
         self.gripper_traj.points = [self.gripper_point]
         self.pub_gripper.publish(self.gripper_traj)
-
-    def hand_callback(self, msg):
-        if self.prev_plan != msg.data:
-            self.prev_plan = msg.data
-            th = self.th_map[msg.data[0]]
-            ff = self.ff_map[msg.data[1]]
-            mf = self.mf_map[msg.data[2]]
-            rf = self.rf_map[msg.data[3]]
-            lf = self.lf_map[msg.data[4]]
-
-            combined_dict = {}
-
-            for d in [ff, mf, rf, lf, th]:
-                combined_dict.update(d)
-            self._run(combined_dict)
     
     def _construct_trajectory_point(self, joint_traj, posture, duration):
         trajectory_point = JointTrajectoryPoint()

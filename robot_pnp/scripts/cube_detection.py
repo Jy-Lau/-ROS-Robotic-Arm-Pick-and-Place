@@ -8,8 +8,6 @@ from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
 import rospkg
 import yaml
-import message_filters
-import time
 
 class Camera():
 
@@ -17,8 +15,7 @@ class Camera():
         rospy.init_node('camera_node', anonymous=True)
         rospy.loginfo("Camera...")
         self._check_camera_ready()
-        self.depth_bridge = CvBridge()
-        self.rgb_bridge = CvBridge()
+        self.bridge = CvBridge()
         with open(rospkg.RosPack().get_path('robot_pnp') + f"/config/hsv_threshold.yaml", 'r') as f:
             hsv_yaml = yaml.safe_load(f)
         self.hsv_threshold = {}
@@ -29,12 +26,7 @@ class Camera():
         self.map_color[0] = 'Red'
         self.map_color[1] = 'Green'
         self.map_color[2] = 'Blue'
-        rgb = message_filters.Subscriber("/camera/image_raw", Image)
-        depth = message_filters.Subscriber("/camera/depth/image_raw", Image)
-
-        #images synchronization
-        syncro = message_filters.TimeSynchronizer([rgb, depth], 10, reset=True)
-        syncro.registerCallback(self._process_CB)
+        self.camera_subscriber = rospy.Subscriber('/camera/depth/image_raw', Image, self.camera_callback)
 
     def _check_camera_ready(self):
         camera_msg = None
@@ -47,22 +39,19 @@ class Camera():
             except:
                 rospy.logdebug("Current /camera/depth/image_raw not ready yet, retrying for getting camera")
         rospy.loginfo("Checking Camera...DONE")
-    
-    def _process_CB(self, image_rgb, image_depth):
-        print("hi")
-        t_start = time.time()
-        #from standard message image to opencv image
-        try:
-            rgb = self.rgb_bridge.imgmsg_to_cv2(image_rgb, "bgr8")                                              
-            depth = self.depth_bridge.imgmsg_to_cv2(image_depth, "32FC1")
 
-            cv2.imshow("Depth Camera Feed", depth)
-            cv2.imshow("RGB Camera Feed", rgb)
-            cv2.waitKey(0)
+    def camera_callback(self, msg):
+        try:
+            depth_image = self.bridge.imgmsg_to_cv2(msg, "32FC1")
+            rgb_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+            # Display image in OpenCV window
+            cv2.imshow("Camera Feed", rgb_image)
+            cv2.waitKey(1)
+            color = self._find_color(rgb_image)
+            # rospy.loginfo(f"{self.map_color[color]} cube detected!")
         except CvBridgeError as e:
             rospy.logerr(e)
             return
-        rospy.loginfo("Time:", time.time() - t_start)
             
 
     def _find_color(self, img):

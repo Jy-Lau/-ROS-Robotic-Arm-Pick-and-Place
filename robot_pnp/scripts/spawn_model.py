@@ -13,12 +13,10 @@ class CubeSpawner():
 		self.path = self.rospack.get_path('robot_pnp')+"/urdf/"
 		self.cubes = []
 		self.cubes.append(self.path+"red_cube.urdf")
-		self.cubes.append(self.path+"green_cube.urdf")
+		# self.cubes.append(self.path+"green_cube.urdf")
 		self.cubes.append(self.path+"blue_cube.urdf")
 		self.counter = 0
 		self.live_cubes =[]
-		self.rate = rospy.Rate(1.3)
-		self.lock = threading.Lock()
 
 		self.sm = rospy.ServiceProxy("/gazebo/spawn_urdf_model", SpawnModel)
 		self.dm = rospy.ServiceProxy("/gazebo/delete_model", DeleteModel)
@@ -39,7 +37,7 @@ class CubeSpawner():
 		
 		quat = tf.transformations.quaternion_from_euler(0,0,0)
 		orient = Quaternion(quat[0],quat[1],quat[2],quat[3])
-		pose = Pose(Point(x=1.8,y=2.4,z=1), orient)
+		pose = Pose(Point(x=1.7,y=5.2,z=1), orient)
 		self.sm(f"cube{self.counter}", cube_urdf, '', pose, 'world')
 		self.live_cubes.append(f"cube{self.counter}")
 		self.counter +=1
@@ -54,16 +52,16 @@ class CubeSpawner():
 
 	def shutdown_hook(self):
 		self.deleteAllModel(self.live_cubes)
-		print("Shutting down")
+		rospy.loginfo("Shutting down")
 
 
 if __name__ == "__main__":
-	print("Waiting for gazebo services...")
+	rospy.loginfo("Waiting for gazebo services...")
 	rospy.init_node("spawn_cubes")
 	rospy.wait_for_service("/gazebo/delete_model")
 	rospy.wait_for_service("/gazebo/spawn_urdf_model")
 	rospy.wait_for_service("/gazebo/get_model_state")
-	rospy.sleep(4)
+	rospy.loginfo("Waiting for gazebo services...Done")
 	cs = CubeSpawner()
 	rospy.on_shutdown(cs.shutdown_hook)
 	cs.spawnModel()

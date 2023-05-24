@@ -9,7 +9,7 @@ import numpy as np
 import rospkg
 import yaml
 
-class Camera():
+class Detector():
 
     def __init__(self):
         rospy.init_node('camera_node', anonymous=True)
@@ -68,5 +68,5 @@ class Camera():
         return index
 
 if __name__ == '__main__':
-    camera = Camera()
+    detector = detector()
     rospy.spin()

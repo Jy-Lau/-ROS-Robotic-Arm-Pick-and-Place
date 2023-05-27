@@ -1,0 +1,7 @@
+# Request message
+geometry_msgs/PointStamped[] points
+
+# Response message
+---
+
+bool status

@@ -9,15 +9,15 @@
         <pose> 0 0 0 0 0 0 </pose>
         <update_rate>30.0</update_rate>
         <camera name="wrist_camera">
-            <horizontal_fov>1.98</horizontal_fov>
+            <horizontal_fov>1.68</horizontal_fov>
             <image>
                 <width>1280</width>
                 <height>1024</height>
                 <format>R8G8B8</format>
             </image>
             <clip>
-                <near>0.05</near>
-                <far>5</far>
+                <near>0.02</near>
+                <far>3</far>
             </clip>
             <noise>
                 <type>gaussian</type>
@@ -47,8 +47,8 @@
             <distortionK3>0.00000001</distortionK3>
             <distortionT1>0.00000001</distortionT1>
             <distortionT2>0.00000001</distortionT2>
-            <pointCloudCutoff>0.5</pointCloudCutoff>
-            <pointCloudCutoffMax>3.0</pointCloudCutoffMax>
+            <pointCloudCutoff>0.02</pointCloudCutoff>
+            <pointCloudCutoffMax>3</pointCloudCutoffMax>
             <CxPrime>0</CxPrime>
             <Cx>0</Cx>
             <Cy>0</Cy>

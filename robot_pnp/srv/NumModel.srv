@@ -1,0 +1,7 @@
+# Request message
+int32 count
+
+# Response message
+---
+
+bool status

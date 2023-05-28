@@ -2,7 +2,7 @@
 
 import rospy
 from sensor_msgs.msg import Image, CameraInfo
-from std_msgs.msg import String
+from std_msgs.msg import Int32
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
@@ -27,6 +27,8 @@ class Camera():
         self.cX = 0
         self.cY = 0
         self.skip=False
+        self.count=0
+        model_sub = rospy.Subscriber('/model/count', Int32, self.model_callback)
 
     def _register_color_threshold(self):
         with open(rospkg.RosPack().get_path('robot_pnp') + f"/config/hsv_threshold.yaml", 'r') as f:
@@ -59,6 +61,10 @@ class Camera():
             rospy.logerr(e)
             return
         self.rgb = rgb
+
+    def model_callback(self, msg):
+        self.count=msg.data
+        self.skip=False
 
     def nothing(self,x):
         pass
@@ -104,14 +110,11 @@ class Camera():
             threshold_value = cv2.getTrackbarPos('Threshold1', 'Edge')
             src_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
             img_blur = cv2.GaussianBlur(src_gray,(5,5),0)
-            # detected_edges = cv2.Canny(img_blur, 30, 255)
             edges = cv2.Canny(img_blur, 135, 135*3)
-            mask = edges != 0
-            # dst = im * (mask[:,:,None].astype(im.dtype))
             contours, hierarchy = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) #cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE
             cv2.drawContours(im, contours, -1, (0, 0, 0), 1)
-            if len(contours)>0 and self.skip ==False:
-                print(f'Length of contours: {len(contours)}')
+            if len(contours)>0 and self.skip ==False and self.count>0:
+                rospy.loginfo(f'Length of contours: {len(contours)}')
                 M0 = cv2.moments(contours[0])
                 if M0["m00"] != 0 and M0["m10"] !=0 and M0["m01"] !=0:
                     self.cX = int(M0["m10"] / M0["m00"])
@@ -121,7 +124,7 @@ class Camera():
                     point.y = self.cY
                     self.coor_pub.publish(point)
                     self.skip=True
-                    print(f'self.cX: {self.cX}, self.cY: {self.cY}')
+                    rospy.loginfo(f'self.cX: {self.cX}, self.cY: {self.cY}')
             im = cv2.circle(im, (self.cX, self.cY), 2, (255, 0, 0), 1)
             cv2.imshow('Edge', im)
             if cv2.waitKey(1) & 0xFF == ord('q'):

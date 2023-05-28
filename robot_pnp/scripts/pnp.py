@@ -19,7 +19,6 @@ class PnP():
     def __init__(self):
         rospy.init_node('pnp_node', anonymous=True)  
         rospy.loginfo("Pick and Place...")
-        self.skip=True
         self.rate = rospy.Rate(10)
         self._check_controller_ready()
         self.pub_arm = rospy.Publisher('/eff_joint_traj_controller/command', JointTrajectory, queue_size=10)
@@ -27,6 +26,7 @@ class PnP():
         self._setup_arm_gripper()
         self._check_moveit_ready()
         self._setup_move_group()
+        self._move_to_home()
         rospy.Service('robot_pnp', PointArray, self.handle_item)
     
     def _setup_move_group(self):
@@ -34,96 +34,13 @@ class PnP():
         self.scene = PlanningSceneInterface()
         self.move_group = MoveGroupCommander(self.robot.get_group_names()[0])
         self.move_group.set_goal_tolerance(0.01)
-        self.move_group.set_planning_time(1.5) #Set the planning time for the arm
-        # self.move_group.set_num_planning_attempts(5)
+        self.move_group.set_planning_time(5) #Set the planning time for the arm
+        self.move_group.set_num_planning_attempts(5)
         self.move_group.set_max_velocity_scaling_factor(1)
         self.move_group.set_max_acceleration_scaling_factor(1)
         self.move_group.set_start_state_to_current_state()
-        joint_goal = dict(zip(self.arm_traj.joint_names, self.arm_point.positions))
         rospy.sleep(2)
-        self.move_group.set_joint_value_target(joint_goal)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
-
-    def handle_item(self,req):
-        self.skip=False
-        rospy.loginfo(f'From PointCloud[0]: {req.points[0]}')
-        # Set the target pose for the end effector
-        pose = Pose()
-        pose.position.x = req.points[0].point.x
-        pose.position.y = req.points[0].point.y
-        pose.position.z = req.points[0].point.z + 0.19 #0.19 is size of wooden block + part of gripper
-        # current_pose = self.move_group.get_current_pose().pose
-        quat = quaternion_from_euler(math.pi, 0, 0)
-        pose.orientation.x = quat[0]
-        pose.orientation.y = quat[1]
-        pose.orientation.z = quat[2]
-        pose.orientation.w = quat[3]
-        self.move_group.set_pose_target(pose)
-        success = self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
-
-        #Open Gripper
-        # rospy.loginfo(f'Opening Gripper')
-        # start_time = rospy.Time.now()
-        # duration = rospy.Duration.from_sec(0.5)
-        # while not rospy.is_shutdown():
-        #     current_time = rospy.Time.now()
-        #     elapsed_time = current_time - start_time
-        #     self.gripper_traj.header.stamp = current_time
-        #     self.gripper_traj.points = [self.gripper_point]
-        #     self.pub_gripper.publish(self.gripper_traj)
-        #     if elapsed_time >= duration:
-        #         break
-
-        rospy.loginfo(f'Closing Gripper')
-        start_time = rospy.Time.now()
-        self.gripper_point = JointTrajectoryPoint()
-        self.gripper_point.positions = self.config['gripper_close_positions']
-        self.gripper_point.time_from_start = rospy.Duration.from_sec(0.25)
-        while not rospy.is_shutdown():
-            current_time = rospy.Time.now()
-            elapsed_time = current_time - start_time
-            self.gripper_traj.header.stamp = current_time
-            self.gripper_traj.points = [self.gripper_point]
-            self.pub_gripper.publish(self.gripper_traj)
-            if elapsed_time >= duration:
-                break
-        
-        pose = Pose()
-        pose.position.x = 0
-        pose.position.y = -1
-        pose.position.z = 2 #0.19 is size of wooden block + part of gripper
-        # current_pose = self.move_group.get_current_pose().pose
-        quat = quaternion_from_euler(math.pi, 0, 0)
-        pose.orientation.x = quat[0]
-        pose.orientation.y = quat[1]
-        pose.orientation.z = quat[2]
-        pose.orientation.w = quat[3]
-        self.move_group.set_pose_target(pose)
-        success = self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
-
-        pose = Pose()
-        pose.position.x = 0
-        pose.position.y = -1
-        pose.position.z = 0.2 #0.19 is size of wooden block + part of gripper
-        # current_pose = self.move_group.get_current_pose().pose
-        quat = quaternion_from_euler(math.pi, 0, 0)
-        pose.orientation.x = quat[0]
-        pose.orientation.y = quat[1]
-        pose.orientation.z = quat[2]
-        pose.orientation.w = quat[3]
-        self.move_group.set_pose_target(pose)
-        success = self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
-
-
-        return success
+    
 
     def _setup_arm_gripper(self):
         self.config = {}
@@ -140,13 +57,8 @@ class PnP():
         self.gripper_point = JointTrajectoryPoint()
         self.gripper_point.positions = self.config['gripper_open_positions']
         self.gripper_point.time_from_start = rospy.Duration.from_sec(0.25)
-        
 
-    def camera_callback(self, msg):
-        if msg.data == 'Open':
-            self.gripper_point.positions = self.config['gripper_open_positions']
-        elif msg.data == 'Close':
-            self.gripper_point.positions = self.config['gripper_close_positions']
+        self.gripper_duration = rospy.Duration.from_sec(1.5)
 
     def _check_moveit_ready(self):
         moveit_msg = None
@@ -182,42 +94,105 @@ class PnP():
 
         rospy.loginfo("Checking Controller...DONE")
 
-    def publish_joint_traj(self):
-        if(self.skip):
-            self.arm_traj.header.stamp = rospy.Time.now()
-            self.arm_traj.points = [self.arm_point]
-            self.pub_arm.publish(self.arm_traj)
+    def _move_to_home(self):
+        rospy.loginfo(f'Moving to Home')
+        joint_goal = dict(zip(self.arm_traj.joint_names, self.arm_point.positions))
+        self.move_group.set_joint_value_target(joint_goal)
+        self.move_group.go(wait=True)
+        self.move_group.stop()
+        self.move_group.clear_pose_targets()
+        rospy.loginfo(f'Done moving to Home')
 
-            self.gripper_traj.header.stamp = rospy.Time.now()
+    def _move_to_target(self):
+        pose = Pose()
+        pose.position.x = 0
+        pose.position.y = -0.6
+        pose.position.z = 0.6 #0.19 is size of wooden block + part of gripper
+        # current_pose = self.move_group.get_current_pose().pose
+        quat = quaternion_from_euler(math.pi, 0, 0)
+        pose.orientation.x = quat[0]
+        pose.orientation.y = quat[1]
+        pose.orientation.z = quat[2]
+        pose.orientation.w = quat[3]
+        self.move_group.set_pose_target(pose)
+        success = self.move_group.go(wait=True)
+        self.move_group.stop()
+        self.move_group.clear_pose_targets()
+
+        pose = Pose()
+        pose.position.x = 0
+        pose.position.y = -0.6
+        pose.position.z = 0.2 #0.19 is size of wooden block + part of gripper
+        # current_pose = self.move_group.get_current_pose().pose
+        quat = quaternion_from_euler(math.pi, 0, 0)
+        pose.orientation.x = quat[0]
+        pose.orientation.y = quat[1]
+        pose.orientation.z = quat[2]
+        pose.orientation.w = quat[3]
+        self.move_group.set_pose_target(pose)
+        success = self.move_group.go(wait=True)
+        self.move_group.stop()
+        self.move_group.clear_pose_targets()
+
+    def _open_gripper(self):
+        rospy.loginfo(f'Opening gripper')
+        start_time = rospy.Time.now()
+        self.gripper_point = JointTrajectoryPoint()
+        self.gripper_point.positions = self.config['gripper_open_positions']
+        self.gripper_point.time_from_start = rospy.Duration.from_sec(0.25)
+        while not rospy.is_shutdown():
+            current_time = rospy.Time.now()
+            elapsed_time = current_time - start_time
+            self.gripper_traj.header.stamp = current_time
             self.gripper_traj.points = [self.gripper_point]
             self.pub_gripper.publish(self.gripper_traj)
-    
-    def _construct_trajectory_point(self, joint_traj, posture, duration):
-        trajectory_point = JointTrajectoryPoint()
-        trajectory_point.time_from_start = rospy.Duration.from_sec(float(duration))
-        for key in joint_traj.joint_names:
-            trajectory_point.positions.append(posture[key])
-        return trajectory_point
+            if elapsed_time >= self.gripper_duration:
+                break
+        rospy.loginfo(f'Done opening gripper')
 
-    def _run(self, traj):
-        #trajectory_start_time = 1.0
-        joint_trajectory = JointTrajectory()
-        joint_trajectory.header.stamp = rospy.Time.now() #+ rospy.Duration.from_sec(float(trajectory_start_time))
-        joint_trajectory.joint_names = list(traj.keys())
-        joint_trajectory.points = []
-        this_trajectory_point = self._construct_trajectory_point(joint_trajectory, traj, 0.05)
-        joint_trajectory.points.append(this_trajectory_point)
-        self.hand_commander.run_joint_trajectory_unsafe(joint_trajectory, False)
+    def _close_gripper(self):
+        rospy.loginfo(f'Closing gripper')
+        start_time = rospy.Time.now()
+        self.gripper_point = JointTrajectoryPoint()
+        self.gripper_point.positions = self.config['gripper_close_positions']
+        self.gripper_point.time_from_start = rospy.Duration.from_sec(0.25)
+        while not rospy.is_shutdown():
+            current_time = rospy.Time.now()
+            elapsed_time = current_time - start_time
+            self.gripper_traj.header.stamp = current_time
+            self.gripper_traj.points = [self.gripper_point]
+            self.pub_gripper.publish(self.gripper_traj)
+            if elapsed_time >= self.gripper_duration:
+                break
+        rospy.loginfo(f'Done closing gripper')
+
+    def handle_item(self,req):
+        rospy.loginfo(f'From PointCloud[0]: {req.points[0]}')
+        # Set the target pose for the end effector
+        pose = Pose()
+        pose.position.x = req.points[0].point.x
+        pose.position.y = req.points[0].point.y
+        pose.position.z = req.points[0].point.z + 0.2 #0.2 is size of wooden block + part of gripper
+        quat = quaternion_from_euler(math.pi, 0, 0)
+        pose.orientation.x = quat[0]
+        pose.orientation.y = quat[1]
+        pose.orientation.z = quat[2]
+        pose.orientation.w = quat[3]
+        self.move_group.set_pose_target(pose)
+        success = self.move_group.go(wait=True)
+        self.move_group.stop()
+        self.move_group.clear_pose_targets()
+
+        self._close_gripper()
+        self._move_to_target()
+        self._open_gripper()
+        self._move_to_home()
+
+        return True
 
 if __name__ == '__main__':
     pnp = PnP()
     rospy.spin()
-    # while not rospy.is_shutdown():
-    #     try:
-    #         pnp.publish_joint_traj()
-    #         pnp.rate.sleep()
-    #     except rospy.ROSInterruptException:
-    #         pass
 
 
 

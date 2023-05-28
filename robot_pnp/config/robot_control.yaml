@@ -15,8 +15,8 @@ arm_initial_positions:
   - 1.51
 
 arm_scanning_positions:
-  - 0
-  - -0.698132
+  - -0.125664
+  - -0.502655
   - -0.502655
   - 2.18166
   - 1.58
@@ -29,4 +29,4 @@ gripper_open_positions:
   - 0
 
 gripper_close_positions:
-  - 0.25
+  - 0.275

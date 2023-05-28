@@ -12,13 +12,14 @@ import tf
 from geometry_msgs.msg import PointStamped, Pose
 from robot_pnp.srv import PointArray
 from geometry_msgs.msg import Point
-
+import threading 
 class PointCloud():
 
     def __init__(self):
         rospy.init_node('point_cloud_node', anonymous=True)
         rospy.loginfo("Point Cloud...")
         self._check_pointcloud_ready()
+        self.lock = threading.Lock()
         self.point_cloud_subscriber = rospy.Subscriber('/camera/depth/points', PointCloud2, self.point_cloud_callback)
         camera_subscriber = rospy.Subscriber('/camera/contour_coodinates', Point, self.camera_callback)
         rospy.loginfo("Waiting for robot_pnp service...")
@@ -29,7 +30,7 @@ class PointCloud():
             self.pnp_service = rospy.ServiceProxy('robot_pnp', PointArray)
         except rospy.ServiceException as e:
             # handle exception
-            print('Service call failed:', e)
+            rospy.logerr(e)
 
     def _check_pointcloud_ready(self):
         pointcloud_msg = None
@@ -69,12 +70,14 @@ class PointCloud():
         # self._get_rgb_from_pointcloud((red,green,blue),point_cloud.height,point_cloud.width)
         # self.point_cloud_array = np.stack((x, y, z), axis=-1)
         # self.point_cloud_array = self.point_cloud_array.reshape((point_cloud.height, point_cloud.width, 3))
-        point_cloud_array2_list =list(point_cloud2.read_points(point_cloud,field_names = ('x', 'y', 'z'), skip_nans=False))
-        point_cloud_array = np.array(point_cloud_array2_list, dtype=np.float32)
-        point_cloud_array = point_cloud_array.reshape((point_cloud.height, point_cloud.width, 3))
-        self.point_cloud_array = point_cloud_array
+        with self.lock:
+            point_cloud_array2_list =list(point_cloud2.read_points(point_cloud,field_names = ('x', 'y', 'z'), skip_nans=False))
+            point_cloud_array = np.array(point_cloud_array2_list, dtype=np.float32)
+            point_cloud_array = point_cloud_array.reshape((point_cloud.height, point_cloud.width, 3))
+            self.point_cloud_array = point_cloud_array
         
     def camera_callback(self, msg):
+        print('Received callback from camera')
         y_pixel=int(msg.y)
         x_pixel=int(msg.x)
         x_coord=0

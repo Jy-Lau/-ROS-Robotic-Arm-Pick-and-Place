@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
 <robot name="blue_cube">
+  <material name="blue">
+    <color rgba="0 0 1 1"/>
+  </material>
   <link name="base_link_blue">
     <inertial>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
@@ -11,9 +14,7 @@
       <geometry>
         <box size="0.08 0.08 0.08"/>
       </geometry>
-      <material name="blue">
-        <color rgba="0 0 1 1"/>
-      </material>
+      <material name="blue"/>
     </visual>
     <collision>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.025"/>
@@ -24,8 +25,6 @@
   </link>
   <gazebo reference="base_link_blue">
     <material>Gazebo/Blue</material>
-    <mu1>1000</mu1>
-    <mu2>1000</mu2>
   </gazebo>
 </robot>
 

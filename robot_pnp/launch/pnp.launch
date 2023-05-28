@@ -48,8 +48,10 @@
   </include>
 
   <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robotiq_2f_140_gripper_visualization)/visualize.rviz" required="true" /> -->
-  <!-- <node name="camera" pkg="robot_pnp" type="camera.py" required="true"/> -->
   <node name="pnp" pkg="robot_pnp" type="pnp.py" required="true"/>
+  <node name="camera" pkg="robot_pnp" type="camera.py" required="true"/>
+  <node name="pointcloud" pkg="robot_pnp" type="pointcloud.py" required="true"/>
+  <node name="num_model" pkg="robot_pnp" type="spawn_model.py" />
 
   <include file="$(find ur5e_moveit_config)/launch/moveit_planning_execution.launch">
     <arg name="sim" value="true" /> 

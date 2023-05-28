@@ -107,22 +107,27 @@
         <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
       </plugin>
     </gazebo>
-<!-- right_inner_finger_pad
-left_inner_finger_pad -->
-    <gazebo reference="right_inner_finger_pad">
-      <mu1>1000</mu1>
-      <mu2>1000</mu2>
-      <kp>1000000.0</kp>
-      <kd>100.0</kd> 
-      <material>Gazebo/RedBright</material>
-    </gazebo>
-
-    <gazebo reference="left_inner_finger_pad">
-      <mu1>1000</mu1>
-      <mu2>1000</mu2>
-      <kp>1000000.0</kp>
-      <kd>100.0</kd> 
-      <material>Gazebo/RedBright</material>
+<!-- right_inner_finger_pad left_inner_finger_pad -->
+    <gazebo>
+       <plugin name="gazebo_grasp_fix" filename="libgazebo_grasp_fix.so">
+            <arm>
+               <arm_name>robot</arm_name>
+               <palm_link>wrist_3_link</palm_link>
+               <gripper_link>right_inner_finger</gripper_link>
+               <gripper_link>left_inner_finger</gripper_link>
+               <gripper_link>right_inner_knuckle</gripper_link>
+               <gripper_link>left_inner_knuckle</gripper_link>
+               <gripper_link>right_outer_knuckle</gripper_link>
+               <gripper_link>left_outer_knuckle</gripper_link>
+            </arm>
+           <forces_angle_tolerance>100</forces_angle_tolerance>
+           <update_rate>2</update_rate>
+           <grip_count_threshold>1</grip_count_threshold>
+           <max_grip_count>2</max_grip_count>
+           <release_tolerance>0.005</release_tolerance>
+           <disable_collisions_on_attach>true</disable_collisions_on_attach>
+           <contact_topic>__default_topic__</contact_topic>
+        </plugin>
     </gazebo>
   </xacro:macro>
 </robot>

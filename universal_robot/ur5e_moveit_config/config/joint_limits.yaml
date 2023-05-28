@@ -4,43 +4,43 @@
 joint_limits:
   elbow_joint:
     has_velocity_limits: true
-    min_velocity: !degrees  330.0
-    max_velocity: !degrees  360.0
+    min_velocity: !degrees  230.0
+    max_velocity: !degrees  260.0
     has_acceleration_limits: true
-    min_acceleration: 4
-    max_acceleration: 5
+    min_acceleration: 3
+    max_acceleration: 4
   shoulder_lift_joint:
     has_velocity_limits: true
-    min_velocity: !degrees  330.0
-    max_velocity: !degrees  360.0
+    min_velocity: !degrees  230.0
+    max_velocity: !degrees  260.0
     has_acceleration_limits: true
-    min_acceleration: 4
-    max_acceleration: 5
+    min_acceleration: 3
+    max_acceleration: 4
   shoulder_pan_joint:
     has_velocity_limits: true
-    min_velocity: !degrees  330.0
-    max_velocity: !degrees  360.0
+    min_velocity: !degrees  230.0
+    max_velocity: !degrees  260.0
     has_acceleration_limits: true
-    min_acceleration: 4
-    max_acceleration: 5
+    min_acceleration: 3
+    max_acceleration: 4
   wrist_1_joint:
     has_velocity_limits: true
-    min_velocity: !degrees  330.0
-    max_velocity: !degrees  360.0
+    min_velocity: !degrees  230.0
+    max_velocity: !degrees  260.0
     has_acceleration_limits: true
-    min_acceleration: 4
-    max_acceleration: 5
+    min_acceleration: 3
+    max_acceleration: 4
   wrist_2_joint:
     has_velocity_limits: true
-    min_velocity: !degrees  330.0
-    max_velocity: !degrees  360.0
+    min_velocity: !degrees  230.0
+    max_velocity: !degrees  260.0
     has_acceleration_limits: true
-    min_acceleration: 4
-    max_acceleration: 5
+    min_acceleration: 3
+    max_acceleration: 4
   wrist_3_joint:
     has_velocity_limits: true
-    min_velocity: !degrees  330.0
-    max_velocity: !degrees  360.0
+    min_velocity: !degrees  230.0
+    max_velocity: !degrees  260.0
     has_acceleration_limits: true
-    min_acceleration: 4
-    max_acceleration: 5
+    min_acceleration: 3
+    max_acceleration: 4

@@ -93,7 +93,11 @@ class Camera():
         return index
     
     def run(self):
-        cv2.namedWindow('Edge', cv2.WINDOW_FREERATIO)
+        # cv2.namedWindow('Edge', cv2.WINDOW_FREERATIO)
+        cv2.namedWindow("Edge", cv2.WINDOW_NORMAL)
+
+        # Resize the window to the desired size
+        cv2.resizeWindow("Edge", 800, 600)
         cv2.createTrackbar('Threshold1', 'Edge' , 0, 255, self.nothing)
         while not rospy.is_shutdown():
             im = self.rgb

@@ -17,8 +17,8 @@ joint_limits:
     max_effort: 150.0
     max_position: !degrees  360.0
     min_acceleration: 4
-    max_acceleration: 4
-    min_velocity: !degrees  360.0
+    max_acceleration: 5
+    min_velocity: !degrees  330.0
     max_velocity: !degrees  360.0
     min_position: !degrees -360.0
   shoulder_lift:
@@ -30,8 +30,8 @@ joint_limits:
     max_effort: 150.0
     max_position: !degrees  360.0
     min_acceleration: 4
-    max_acceleration: 4
-    min_velocity: !degrees  360.0
+    max_acceleration: 5
+    min_velocity: !degrees  330.0
     max_velocity: !degrees  360.0
     min_position: !degrees -360.0
   elbow_joint:
@@ -53,8 +53,8 @@ joint_limits:
     # more information.
     max_position: !degrees  180.0
     min_acceleration: 4
-    max_acceleration: 4
-    min_velocity: !degrees  360.0
+    max_acceleration: 5
+    min_velocity: !degrees  330.0
     max_velocity: !degrees  360.0
     min_position: !degrees -180.0
   wrist_1:
@@ -66,8 +66,8 @@ joint_limits:
     max_effort: 28.0
     max_position: !degrees  360.0
     min_acceleration: 4
-    max_acceleration: 4
-    min_velocity: !degrees  360.0
+    max_acceleration: 5
+    min_velocity: !degrees  330.0
     max_velocity: !degrees  360.0
     min_position: !degrees -360.0
   wrist_2:
@@ -79,8 +79,8 @@ joint_limits:
     max_effort: 28.0
     max_position: !degrees  360.0
     min_acceleration: 4
-    max_acceleration: 4
-    min_velocity: !degrees  360.0
+    max_acceleration: 5
+    min_velocity: !degrees  330.0
     max_velocity: !degrees  360.0
     min_position: !degrees -360.0
   wrist_3:
@@ -92,7 +92,7 @@ joint_limits:
     max_effort: 28.0
     max_position: !degrees  360.0
     min_acceleration: 4
-    max_acceleration: 4
-    min_velocity: !degrees  360.0
+    max_acceleration: 5
+    min_velocity: !degrees  330.0
     max_velocity: !degrees  360.0
     min_position: !degrees -360.0

@@ -55,17 +55,17 @@ class PointCloud():
 
     def point_cloud_callback(self, point_cloud):
         self.frame_id = point_cloud.header.frame_id
-        point_step = point_cloud.point_step  # 32 bytes
-        endian_format = '>' if point_cloud.is_bigendian else '<'
-        num_points = len(point_cloud.data) // point_step
+        # point_step = point_cloud.point_step  # 32 bytes
+        # endian_format = '>' if point_cloud.is_bigendian else '<'
+        # num_points = len(point_cloud.data) // point_step
 
-        x = np.zeros((num_points,), dtype=np.float32)  # Replace with your actual blue channel values
-        y = np.zeros((num_points,), dtype=np.float32)  # Replace with your actual blue channel values
-        z = np.zeros((num_points,), dtype=np.float32)  # Replace with your actual blue channel values
+        # x = np.zeros((num_points,), dtype=np.float32)  # Replace with your actual blue channel values
+        # y = np.zeros((num_points,), dtype=np.float32)  # Replace with your actual blue channel values
+        # z = np.zeros((num_points,), dtype=np.float32)  # Replace with your actual blue channel values
 
-        for i in range(num_points):
-            point_data = point_cloud.data[i * point_step: (i + 1) * point_step]
-            x[i], y[i], z[i], rgb_value = struct.unpack(f'{endian_format}ffff', point_data[:12] + point_data[16:20])  # Assuming little-endian byte order         
+        # for i in range(num_points):
+        #     point_data = point_cloud.data[i * point_step: (i + 1) * point_step]
+        #     x[i], y[i], z[i], rgb_value = struct.unpack(f'{endian_format}ffff', point_data[:12] + point_data[16:20])  # Assuming little-endian byte order         
         # self._get_rgb_from_pointcloud((red,green,blue),point_cloud.height,point_cloud.width)
         # self.point_cloud_array = np.stack((x, y, z), axis=-1)
         # self.point_cloud_array = self.point_cloud_array.reshape((point_cloud.height, point_cloud.width, 3))

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <robot name="blue_cube">
-  <link name="base_link">
+  <link name="base_link_blue">
     <inertial>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
       <mass value="0.1"/>
@@ -22,8 +22,10 @@
       </geometry>
     </collision>
   </link>
-  <gazebo reference="base_link">
+  <gazebo reference="base_link_blue">
     <material>Gazebo/Blue</material>
+    <mu1>1000</mu1>
+    <mu2>1000</mu2>
   </gazebo>
 </robot>
 

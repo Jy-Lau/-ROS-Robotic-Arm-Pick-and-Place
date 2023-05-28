@@ -66,17 +66,18 @@ class PnP():
         self.move_group.clear_pose_targets()
 
         #Open Gripper
-        rospy.loginfo(f'Opening Gripper')
-        start_time = rospy.Time.now()
-        duration = rospy.Duration.from_sec(0.5)
-        while not rospy.is_shutdown():
-            current_time = rospy.Time.now()
-            elapsed_time = current_time - start_time
-            self.gripper_traj.header.stamp = current_time
-            self.gripper_traj.points = [self.gripper_point]
-            self.pub_gripper.publish(self.gripper_traj)
-            if elapsed_time >= duration:
-                break
+        # rospy.loginfo(f'Opening Gripper')
+        # start_time = rospy.Time.now()
+        # duration = rospy.Duration.from_sec(0.5)
+        # while not rospy.is_shutdown():
+        #     current_time = rospy.Time.now()
+        #     elapsed_time = current_time - start_time
+        #     self.gripper_traj.header.stamp = current_time
+        #     self.gripper_traj.points = [self.gripper_point]
+        #     self.pub_gripper.publish(self.gripper_traj)
+        #     if elapsed_time >= duration:
+        #         break
+
         rospy.loginfo(f'Closing Gripper')
         start_time = rospy.Time.now()
         self.gripper_point = JointTrajectoryPoint()
@@ -90,6 +91,37 @@ class PnP():
             self.pub_gripper.publish(self.gripper_traj)
             if elapsed_time >= duration:
                 break
+        
+        pose = Pose()
+        pose.position.x = 0
+        pose.position.y = -1
+        pose.position.z = 2 #0.19 is size of wooden block + part of gripper
+        # current_pose = self.move_group.get_current_pose().pose
+        quat = quaternion_from_euler(math.pi, 0, 0)
+        pose.orientation.x = quat[0]
+        pose.orientation.y = quat[1]
+        pose.orientation.z = quat[2]
+        pose.orientation.w = quat[3]
+        self.move_group.set_pose_target(pose)
+        success = self.move_group.go(wait=True)
+        self.move_group.stop()
+        self.move_group.clear_pose_targets()
+
+        pose = Pose()
+        pose.position.x = 0
+        pose.position.y = -1
+        pose.position.z = 0.2 #0.19 is size of wooden block + part of gripper
+        # current_pose = self.move_group.get_current_pose().pose
+        quat = quaternion_from_euler(math.pi, 0, 0)
+        pose.orientation.x = quat[0]
+        pose.orientation.y = quat[1]
+        pose.orientation.z = quat[2]
+        pose.orientation.w = quat[3]
+        self.move_group.set_pose_target(pose)
+        success = self.move_group.go(wait=True)
+        self.move_group.stop()
+        self.move_group.clear_pose_targets()
+
 
         return success
 
